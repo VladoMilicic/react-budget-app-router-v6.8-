@@ -1,34 +1,47 @@
-import { useState } from 'react'
-import './index.css'
+
 import {
   createBrowserRouter,
   RouterProvider,
 } from "react-router-dom";
-import Dashboard, { dashboardLoader } from './pages/Dashboard';
-import Error from './pages/Error';
 
+// Layouts
+import Main, { mainLoader } from "./layouts/Main";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+// Actions
+import { logoutAction } from "./actions/logout";
+
+// Routes
+import Dashboard, { dashboardLoader } from "./pages/Dashboard";
+import Error from "./pages/Error";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Dashboard />,
-    loader: dashboardLoader,
-    //errorElement:<Error />
-      },
+    element: <Main />,
+    loader: mainLoader,
+    errorElement: <Error />,
+    children: [
       {
-        path: "*",
-        element: <Error />,
+        index: true,
+        element: <Dashboard />,
+        loader: dashboardLoader,
+        errorElement: <Error />
+      },{
+        path:"logout",
+        // element:<p>Loged out</p>
+        action: logoutAction
       }
-    ],
+    ]
+  },
+]);
 
-);
 function App() {
-
-  return (
-    <div className="App">
-      <RouterProvider router={router} />
-    </div>
-  )
+  return <div className="App">
+    <RouterProvider router={router} />
+    <ToastContainer />
+  </div>;
 }
 
-export default App
+export default App;
