@@ -15,7 +15,7 @@ export const createBudget = ({
         id: crypto.randomUUID(),
         name: name,
         createdAt: Date.now(),
-        amount: +amount //plus konvertuje string u broj
+        amount: +amount, //plus konvertuje string u broj
         color: generaterRandomColr()
     }
     const existingBudgets = fetchData("budgets") ?? [];
