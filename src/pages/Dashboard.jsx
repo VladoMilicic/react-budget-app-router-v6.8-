@@ -1,68 +1,98 @@
-//helper functions
+// rrd imports
+import { useLoaderData } from "react-router-dom";
 
-import { Outlet, useLoaderData } from "react-router-dom";
-import { createBudget, fetchData } from "../helpers";
-import Intro from "../components/Intro"
+// library imports
 import { toast } from "react-toastify";
+
+// components
+import Intro from "../components/Intro";
 import AddBudgetForm from "../components/AddBudgetForm";
+import AddExpenseForm from "../components/AddExpenseForm";
 
-//loader
-export function dashboardLoader(){
-    const userName = fetchData("userName");
-    const budgets = fetchData("budgets"); //ima li išta u lokalstorage-u key "budgets"
+//  helper functions
+import { createBudget, createExpense, fetchData, waait } from "../helpers"
 
-    return {userName, budgets}
+// loader
+export function dashboardLoader() {
+  const userName = fetchData("userName");
+  const budgets = fetchData("budgets");
+  return { userName, budgets }
 }
 
-//action
-export async function dashboardAction({request}){
-    const data = await request.formData()
-    const {_action, ...values} = Object.fromEntries(data)
-    if(_action==="newUser"){
-    try{
-    localStorage.setItem("userName", JSON.stringify(values.userName))
-    return toast.success(`Welcome, ${values.userName}`)
-}catch(e){
-    throw new Error("There was a problem creating your account")
-}}
-if (_action ==="createBudget"){
+// action
+export async function dashboardAction({ request }) {
+  await waait(); //oponaša čekanje odgovora iz baze, izbrisati u produkciji + iz helpers.js funkciju
+
+  const data = await request.formData();
+  const { _action, ...values } = Object.fromEntries(data)
+
+  // new user submission
+  if (_action === "newUser") {
     try {
-        createBudget({
-            name:values.newBudget,
-            amount:values.newBudgetAmount,
-        })
-        return toast.success("Budget created")
+      localStorage.setItem("userName", JSON.stringify(values.userName))
+      return toast.success(`Welcome, ${values.userName}`)
+    } catch (e) {
+      throw new Error("There was a problem creating your account.")
     }
-    catch(e){
-        throw new Error("There was problem creating budget")
+  }
+
+  if (_action === "createBudget") {
+    try {
+      createBudget({
+        name: values.newBudget,
+        amount: values.newBudgetAmount,
+      })
+      return toast.success("Budget created!")
+    } catch (e) {
+      throw new Error("There was a problem creating your budget.")
     }
-}
+  }
+
+  if (_action === "createExpense") {
+    try {
+      createExpense({
+        name: values.newExpense,
+        amount: values.newExpenseAmount,
+        budgetId: values.newExpenseBudget
+      })
+      return toast.success(`Expense ${values.newExpense} created!`)
+    } catch (e) {
+      throw new Error("There was a problem creating your expense.")
+    }
+  }
 }
 
 const Dashboard = () => {
-    const {userName, budgets} = useLoaderData()
-    return (
-        <>
-            {userName ? (
-            <div className="dashboard">
-                <h1>Welcome back,  
-                    <span className="accent">
-                        {userName}
-                    </span>
-                </h1>
-                <div className="grtid-sm">
-                    {/* {budgets ? () :()} */}
-                    <div className="grid-lg">
-                        <div className="flex-lg">
-                            <AddBudgetForm />
-                        </div>
-                    </div>
-                </div>
-            </div>
-            ):<Intro />}
-            <Outlet />
-        </>
-     );
-}
+  const { userName, budgets } = useLoaderData()
 
-export default Dashboard;
+  return (
+    <>
+      {userName ? (
+        <div className="dashboard">
+          <h1>Welcome back, <span className="accent">{userName}</span></h1>
+          <div className="grid-sm">
+            {
+              budgets && budgets.length > 0
+                ? (
+                  <div className="grid-lg">
+                    <div className="flex-lg">
+                      <AddBudgetForm />
+                      <AddExpenseForm budgets={budgets} />
+                    </div>
+                  </div>
+                )
+                : (
+                  <div className="grid-sm">
+                    <p>Personal budgeting is the secret to financial freedom.</p>
+                    <p>Create a budget to get started!</p>
+                    <AddBudgetForm />
+                  </div>
+                )
+            }
+          </div>
+        </div>
+      ) : <Intro />}
+    </>
+  )
+}
+export default Dashboard

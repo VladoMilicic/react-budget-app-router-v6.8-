@@ -1,3 +1,4 @@
+/* ⚠️ CSS optimized for the tutorial, not for expanding to a larger site. ⚠️ */
 
 *,
 *::before,
@@ -282,8 +283,6 @@ p {
 
 .layout > img {
   width: 100%;
-  position: absolute;
-  top: 80%;
 }
 
 main {
